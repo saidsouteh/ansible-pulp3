@@ -146,3 +146,59 @@ It is recommended that you do so with `pip` in a virtualenv.
    ```bash
    molecule converge --all
    ```
+
+Pulp 3 Ansible use-case
+========================
+
+   - Create repository:
+   http POST http://localhost:24817/pulp/api/v3/repositories/ansible/ansible/ name=newrepo
+   Output:
+   {
+    "description": null,
+    "latest_version_href": "/pulp/api/v3/repositories/ansible/ansible/030e9513-a4a3-4dd1-b277-5d63ba7eaab9/versions/0/",
+    "name": "newrepo",
+    "pulp_created": "2020-02-27T10:13:56.995789Z",
+    "pulp_href": "/pulp/api/v3/repositories/ansible/ansible/030e9513-a4a3-4dd1-b277-5d63ba7eaab9/",
+    "versions_href": "/pulp/api/v3/repositories/ansible/ansible/030e9513-a4a3-4dd1-b277-5d63ba7eaab9/versions/"
+   }
+  - Create distribution for repository
+  http POST http://localhost:24817/pulp/api/v3/distributions/ansible/ansible/  name='newbaz'   base_path='newcontent'  repository="/pulp/api/v3/repositories/ansible/ansible/030e9513-a4a3-4dd1-b277-5d63ba7eaab9/"
+  - Push  role to artifact
+  http -f POST http://localhost:24817/pulp/api/v3/artifacts/ file@pulp.tar.gz
+  Output:
+  {
+    "file": "artifact/be/ceea383b9e17c89cb940cc9e14d14e03f50dcd1e7714aeb400f9a27bc7f5b4",
+    "md5": "a0eebe3da58d9705f55562e705348c0b",
+    "pulp_created": "2020-02-27T10:21:33.692376Z",
+    "pulp_href": "/pulp/api/v3/artifacts/182de6bd-ea67-4854-92aa-d7e78f08a07c/",
+    "sha1": "b6202b6b64ee873a3e454fcfdffaa5a631c353a4",
+    "sha224": "0c1be4d215d0930246eee9cda438319b594ce33252e3b87d586b475a",
+    "sha256": "beceea383b9e17c89cb940cc9e14d14e03f50dcd1e7714aeb400f9a27bc7f5b4",
+    "sha384": "9b8fb1b35ab6cfdc23da9fbefcb822cbb4da7b08e4049526597acf85f84bf778cb5f7ea6e386ff59ef1e693b99cf0e4a",
+    "sha512": "cabdd8f607f679b31bab311f290459377660fed991990ed5f30095368eff671e8b4680a585c14ee0370fdf0b5442367e222114b6f36704c05981c369eec4ac9c",
+    "size": 51146
+  }
+  - Link role to  artifact already created
+  http -f POST http://localhost:24817/pulp/api/v3/content/ansible/roles/ version=1.0 name=pulp namespace=pulp artifact="/pulp/api/v3/artifacts/182de6bd-ea67-4854-92aa-d7e78f08a07c/"
+    Output :
+  {
+    "artifact": "/pulp/api/v3/artifacts/182de6bd-ea67-4854-92aa-d7e78f08a07c/",
+    "name": "pulp",
+    "namespace": "pulp",
+    "pulp_created": "2020-02-27T10:41:54.987736Z",
+    "pulp_href": "/pulp/api/v3/content/ansible/roles/1fbf1488-be21-42bd-96a2-238a07a301e6/",
+    "version": "1.0"
+}
+
+  - Add role de repo already created
+  echo '{"add_content_units": ["'/pulp/api/v3/content/ansible/roles/336f512b-0d28-49aa-b224-c093a916dc0b/'"]}' | http POST http://localhost:24817/pulp/api/v3/repositories/ansible/ansible/030e9513-a4a3-4dd1-b277-5d63ba7eaab9/modify/
+  - configure ansible.cfg tu use internal galaxy
+  [galaxy]
+  server: http://localhost:24817/pulp_ansible/galaxy/newcontent/
+  - Installation role using ansible-galaxy
+  ansible-galaxy role install pulp,1.0
+
+  
+  
+
+ 
