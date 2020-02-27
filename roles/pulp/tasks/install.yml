@@ -29,7 +29,7 @@
                    (( ansible_loop.last ) and (epel.rc == 126))
       # Cast a single string as a list so that the loop will work.
       # This will also convert a list to a list with 1 list in it, so flatten it
-      # so that the yum task will only operate on 1 item at a time.
+     # so that the yum task will only operate on 1 item at a time.
       loop: "{{ lookup('vars', 'epel_release_packages', wantlist=True) | flatten }}"
       loop_control:
         extended: True

@@ -1,13 +1,14 @@
 ---
-- hosts: all
-  pre_tasks:
-    # The version string below is the highest of all those in roles' metadata:
-    # "min_ansible_version". It needs to be kept manually up-to-date.
-    - name: Verify Ansible meets min required version
-      assert:
-        that: "ansible_version.full is version_compare('2.8', '>=')"
-        msg: >
-          "You must update Ansible to at least 2.8 to use this version of Pulp 3 Installer."
+- hosts: localhost
+  connection: local
+  vars:
+    pulp_secret_key: "unsafe_default"
+    pulp_default_admin_password: password
+#    ansible_python_interpreter: "/usr/bin/python3"
+    pulp_install_plugins: 
+      pulp-ansible:
+         app_label:"pulp_ansible"
+  
   roles:
     - pulp-database
     - pulp-workers
